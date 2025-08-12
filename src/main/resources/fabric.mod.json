@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "mobesp",
+  "version": "${version}",
+  "name": "Mob ESP",
+  "description": "A mod that makes mobs glow for easier visibility",
+  "authors": [
+    "Rasmus"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/mobesp/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.rasmus.mobesp.Mobesp"
+    ],
+    "client": [
+      "com.rasmus.mobesp.client.MobespClient"
+    ],
+    "modmenu": [
+      "com.rasmus.mobesp.config.MobespModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "mobesp.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}",
+    "java": ">=21"
+  },
+  "suggests": {
+    "modmenu": "*"
+  }
+}
