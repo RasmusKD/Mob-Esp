@@ -1,9 +1,9 @@
 package com.rasmus.mobesp.util;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -104,12 +104,12 @@ public class SpawnEggRenderer {
         SPAWN_EGGS.put("ender_dragon", Items.ENDER_DRAGON_SPAWN_EGG);
     }
 
-    public static void renderMobIcon(DrawContext context, String mobType, int x, int y) {
+    public static void renderMobIcon(GuiGraphicsExtractor extractor, String mobType, int x, int y) {
         Item spawnEgg = SPAWN_EGGS.get(mobType);
         if (spawnEgg != null) {
             ItemStack stack = new ItemStack(spawnEgg);
             // Render inline with proper positioning
-            context.drawItem(stack, x + 6, y + 6);
+            extractor.item(stack, x + 6, y + 6);
         }
     }
 

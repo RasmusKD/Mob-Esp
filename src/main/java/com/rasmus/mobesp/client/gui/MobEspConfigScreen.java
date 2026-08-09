@@ -4,12 +4,15 @@ import com.rasmus.mobesp.config.MobespConfig;
 import com.rasmus.mobesp.util.MobTypes;
 import com.rasmus.mobesp.util.SpawnEggRenderer;
 import me.shedaniel.autoconfig.AutoConfig;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +21,8 @@ import java.util.stream.Collectors;
 public class MobEspConfigScreen extends Screen {
     private final Screen parent;
     private final MobespConfig config;
-    private final List<ButtonWidget> mobButtons = new ArrayList<>();
-    private TextFieldWidget searchField;
+    private final List<Button> mobButtons = new ArrayList<>();
+    private EditBox searchField;
     private int scrollOffset = 0;
     private int maxScrollOffset = 0;
     private String currentSearchTerm = "";
@@ -29,7 +32,7 @@ public class MobEspConfigScreen extends Screen {
     private static final int BUTTON_SPACING = 5;
 
     public MobEspConfigScreen(Screen parent) {
-        super(Text.literal("Mob ESP Configuration"));
+        super(Component.literal("Mob ESP Configuration"));
         this.parent = parent;
         this.config = MobespConfig.get();
     }
@@ -53,36 +56,36 @@ public class MobEspConfigScreen extends Screen {
         int startX = centerX - (totalWidth / 2);
 
         // Master toggle button (left)
-        ButtonWidget masterToggleButton = ButtonWidget.builder(
-                Text.literal("Master Toggle: " + (config.masterToggle ? "ON" : "OFF"))
-                        .formatted(config.masterToggle ? Formatting.GREEN : Formatting.RED),
+        Button masterToggleButton = Button.builder(
+                Component.literal("Master Toggle: " + (config.masterToggle ? "ON" : "OFF"))
+                        .withStyle(config.masterToggle ? ChatFormatting.GREEN : ChatFormatting.RED),
                 button -> {
                     config.masterToggle = !config.masterToggle;
-                    button.setMessage(Text.literal("Master Toggle: " + (config.masterToggle ? "ON" : "OFF"))
-                            .formatted(config.masterToggle ? Formatting.GREEN : Formatting.RED));
+                    button.setMessage(Component.literal("Master Toggle: " + (config.masterToggle ? "ON" : "OFF"))
+                            .withStyle(config.masterToggle ? ChatFormatting.GREEN : ChatFormatting.RED));
                     saveConfig();
                 }
-        ).dimensions(startX, topRowY, masterToggleWidth, 20).build();
-        this.addDrawableChild(masterToggleButton);
+        ).bounds(startX, topRowY, masterToggleWidth, 20).build();
+        this.addRenderableWidget(masterToggleButton);
 
         // Search field (middle)
         int searchX = startX + masterToggleWidth + spacing;
-        searchField = new TextFieldWidget(this.textRenderer, searchX, topRowY, searchWidth, 20, Text.literal("Search..."));
-        searchField.setPlaceholder(Text.literal("Search...").formatted(Formatting.GRAY));
-        searchField.setText(currentSearchTerm);
-        searchField.setChangedListener(this::onSearchChanged);
-        this.addDrawableChild(searchField);
+        searchField = new EditBox(this.font, searchX, topRowY, searchWidth, 20, Component.literal("Search..."));
+        searchField.setHint(Component.literal("Search...").withStyle(ChatFormatting.GRAY));
+        searchField.setValue(currentSearchTerm);
+        searchField.setResponder(this::onSearchChanged);
+        this.addRenderableWidget(searchField);
 
         // Clear button (right)
         int clearX = searchX + searchWidth + spacing;
-        this.addDrawableChild(ButtonWidget.builder(
-                Text.literal("Clear"),
+        this.addRenderableWidget(Button.builder(
+                Component.literal("Clear"),
                 button -> {
-                    searchField.setText("");
+                    searchField.setValue("");
                     onSearchChanged("");
                     searchField.setFocused(false); // Remove focus after clearing
                 }
-        ).dimensions(clearX, topRowY, clearWidth, 20).build());
+        ).bounds(clearX, topRowY, clearWidth, 20).build());
 
         // Calculate max scroll offset based on filtered results
         calculateMaxScroll();
@@ -91,13 +94,13 @@ public class MobEspConfigScreen extends Screen {
         createMobButtons();
 
         // Bottom buttons
-        this.addDrawableChild(ButtonWidget.builder(
-                Text.literal("Done"),
-                button -> this.close()
-        ).dimensions(this.width / 2 - 50, this.height - 30, 100, 20).build());
+        this.addRenderableWidget(Button.builder(
+                Component.literal("Done"),
+                button -> this.onClose()
+        ).bounds(this.width / 2 - 50, this.height - 30, 100, 20).build());
 
-        this.addDrawableChild(ButtonWidget.builder(
-                Text.literal("All ON"),
+        this.addRenderableWidget(Button.builder(
+                Component.literal("All ON"),
                 button -> {
                     for (String mobType : getFilteredMobs()) {
                         config.setMobGlowEnabled(mobType, true);
@@ -105,10 +108,10 @@ public class MobEspConfigScreen extends Screen {
                     updateMobButtons();
                     saveConfig();
                 }
-        ).dimensions(this.width / 2 - 160, this.height - 30, 50, 20).build());
+        ).bounds(this.width / 2 - 160, this.height - 30, 50, 20).build());
 
-        this.addDrawableChild(ButtonWidget.builder(
-                Text.literal("All OFF"),
+        this.addRenderableWidget(Button.builder(
+                Component.literal("All OFF"),
                 button -> {
                     for (String mobType : getFilteredMobs()) {
                         config.setMobGlowEnabled(mobType, false);
@@ -116,7 +119,7 @@ public class MobEspConfigScreen extends Screen {
                     updateMobButtons();
                     saveConfig();
                 }
-        ).dimensions(this.width / 2 + 110, this.height - 30, 50, 20).build());
+        ).bounds(this.width / 2 + 110, this.height - 30, 50, 20).build());
     }
 
     private void onSearchChanged(String searchTerm) {
@@ -198,20 +201,20 @@ public class MobEspConfigScreen extends Screen {
             if (y > 60 && y < this.height - 60) {
                 String displayName = SpawnEggRenderer.getFormattedName(mobType);
 
-                ButtonWidget button = ButtonWidget.builder(
-                        Text.literal("   " + displayName)
-                                .formatted(isEnabled ? Formatting.GREEN : Formatting.RED),
+                Button button = Button.builder(
+                        Component.literal("   " + displayName)
+                                .withStyle(isEnabled ? ChatFormatting.GREEN : ChatFormatting.RED),
                         btn -> {
                             boolean newState = !config.isMobGlowEnabled(mobType);
                             config.setMobGlowEnabled(mobType, newState);
-                            btn.setMessage(Text.literal("   " + displayName)
-                                    .formatted(newState ? Formatting.GREEN : Formatting.RED));
+                            btn.setMessage(Component.literal("   " + displayName)
+                                    .withStyle(newState ? ChatFormatting.GREEN : ChatFormatting.RED));
                             saveConfig();
                         }
-                ).dimensions(x, y, BUTTON_WIDTH, BUTTON_HEIGHT).build();
+                ).bounds(x, y, BUTTON_WIDTH, BUTTON_HEIGHT).build();
 
                 mobButtons.add(button);
-                this.addDrawableChild(button);
+                this.addRenderableWidget(button);
             }
 
             currentCol++;
@@ -224,8 +227,8 @@ public class MobEspConfigScreen extends Screen {
 
     private void recreateMobButtonsOnly() {
         // Remove only mob buttons, not all children
-        for (ButtonWidget button : mobButtons) {
-            this.remove(button);
+        for (Button button : mobButtons) {
+            this.removeWidget(button);
         }
         mobButtons.clear();
 
@@ -235,7 +238,7 @@ public class MobEspConfigScreen extends Screen {
 
     private void updateMobButtons() {
         // Remove all mob buttons and recreate them
-        this.clearChildren();
+        this.clearWidgets();
         this.init();
     }
 
@@ -244,19 +247,24 @@ public class MobEspConfigScreen extends Screen {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void extractBackground(GuiGraphicsExtractor extractor, int mouseX, int mouseY, float delta) {
         // Render a simple dark background
-        context.fill(0, 0, this.width, this.height, 0x88000000);
+        extractor.fill(0, 0, this.width, this.height, 0x88000000);
+    }
 
-        // Render widgets first
-        super.render(context, mouseX, mouseY, delta);
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor extractor, int mouseX, int mouseY, float delta) {
+        // Render background + widgets first
+        super.extractRenderState(extractor, mouseX, mouseY, delta);
+
+        // Overlays go on top of the widgets
+        extractor.nextStratum();
 
         // Title
-        context.drawCenteredTextWithShadow(this.textRenderer, this.title,
-                this.width / 2, 10, 0xFFFFFF);
+        extractor.centeredText(this.font, this.title, this.width / 2, 10, 0xFFFFFFFF);
 
         // Enhanced search field visual feedback
-        renderSearchFieldFeedback(context);
+        renderSearchFieldFeedback(extractor);
 
         // Search results count
         List<String> filteredMobs = getFilteredMobs();
@@ -266,23 +274,23 @@ public class MobEspConfigScreen extends Screen {
         }
 
         // Color the result text based on search activity
-        Formatting resultColor = !currentSearchTerm.isEmpty() ? Formatting.YELLOW : Formatting.GRAY;
+        ChatFormatting resultColor = !currentSearchTerm.isEmpty() ? ChatFormatting.YELLOW : ChatFormatting.GRAY;
         if (!currentSearchTerm.isEmpty() && filteredMobs.isEmpty()) {
-            resultColor = Formatting.RED; // No results found
+            resultColor = ChatFormatting.RED; // No results found
         }
 
-        context.drawCenteredTextWithShadow(this.textRenderer,
-                Text.literal(resultText).formatted(resultColor),
-                this.width / 2, 55, 0xFFFFFF);
+        extractor.centeredText(this.font,
+                Component.literal(resultText).withStyle(resultColor),
+                this.width / 2, 55, 0xFFFFFFFF);
 
         // Render spawn egg icons on buttons
-        renderMobIcons(context);
+        renderMobIcons(extractor);
 
         // Render scrollbar
-        renderScrollbar(context);
+        renderScrollbar(extractor);
     }
 
-    private void renderSearchFieldFeedback(DrawContext context) {
+    private void renderSearchFieldFeedback(GuiGraphicsExtractor extractor) {
         // Get search field position
         int searchX = searchField.getX();
         int searchY = searchField.getY();
@@ -293,33 +301,31 @@ public class MobEspConfigScreen extends Screen {
         if (searchField.isFocused()) {
             // Bright border around search field when focused
             int borderColor = 0xFF4A9EFF; // Light blue
-            context.fill(searchX - 2, searchY - 2, searchX + searchWidth + 2, searchY, borderColor);
-            context.fill(searchX - 2, searchY + searchHeight, searchX + searchWidth + 2, searchY + searchHeight + 2, borderColor);
-            context.fill(searchX - 2, searchY, searchX, searchY + searchHeight, borderColor);
-            context.fill(searchX + searchWidth, searchY, searchX + searchWidth + 2, searchY + searchHeight, borderColor);
+            extractor.fill(searchX - 2, searchY - 2, searchX + searchWidth + 2, searchY, borderColor);
+            extractor.fill(searchX - 2, searchY + searchHeight, searchX + searchWidth + 2, searchY + searchHeight + 2, borderColor);
+            extractor.fill(searchX - 2, searchY, searchX, searchY + searchHeight, borderColor);
+            extractor.fill(searchX + searchWidth, searchY, searchX + searchWidth + 2, searchY + searchHeight, borderColor);
 
             // Status indicator
             String statusText = "Search active";
             int statusX = searchX + searchWidth + 10;
             int statusY = searchY + 5;
-            context.drawTextWithShadow(this.textRenderer,
-                    Text.literal(statusText).formatted(Formatting.AQUA),
-                    statusX, statusY, 0xFFFFFF);
+            extractor.text(this.font,
+                    Component.literal(statusText).withStyle(ChatFormatting.AQUA),
+                    statusX, statusY, 0xFFFFFFFF);
         }
 
         // Show search term feedback
         if (!currentSearchTerm.isEmpty()) {
             String searchInfo = "Searching for: \"" + currentSearchTerm + "\"";
-            int infoY = searchY - 12;
-            context.drawTextWithShadow(this.textRenderer,
-                    Text.literal(searchInfo).formatted(Formatting.YELLOW),
-                    searchX, infoY, 0xFFFFFF);
+            int infoY = searchField.getY() - 12;
+            extractor.text(this.font,
+                    Component.literal(searchInfo).withStyle(ChatFormatting.YELLOW),
+                    searchX, infoY, 0xFFFFFFFF);
         }
-
-
     }
 
-    private void renderMobIcons(DrawContext context) {
+    private void renderMobIcons(GuiGraphicsExtractor extractor) {
         List<String> filteredMobs = getFilteredMobs();
 
         int startY = 70;
@@ -334,7 +340,7 @@ public class MobEspConfigScreen extends Screen {
             // Only render visible icons
             if (y > 60 && y < this.height - 60) {
                 // Render spawn egg icon inline with button
-                SpawnEggRenderer.renderMobIcon(context, mobType, x, y);
+                SpawnEggRenderer.renderMobIcon(extractor, mobType, x, y);
             }
 
             currentCol++;
@@ -345,7 +351,7 @@ public class MobEspConfigScreen extends Screen {
         }
     }
 
-    private void renderScrollbar(DrawContext context) {
+    private void renderScrollbar(GuiGraphicsExtractor extractor) {
         if (maxScrollOffset <= 0) return; // No scrollbar needed if everything fits
 
         int scrollbarX = this.width - 15;
@@ -354,7 +360,7 @@ public class MobEspConfigScreen extends Screen {
         int scrollbarWidth = 8;
 
         // Background track
-        context.fill(scrollbarX, scrollbarY, scrollbarX + scrollbarWidth, scrollbarY + scrollbarHeight, 0x88444444);
+        extractor.fill(scrollbarX, scrollbarY, scrollbarX + scrollbarWidth, scrollbarY + scrollbarHeight, 0x88444444);
 
         // Calculate thumb position and size
         float scrollPercent = (float) scrollOffset / maxScrollOffset;
@@ -362,7 +368,7 @@ public class MobEspConfigScreen extends Screen {
         int thumbY = scrollbarY + (int) (scrollPercent * (scrollbarHeight - thumbHeight));
 
         // Scrollbar thumb
-        context.fill(scrollbarX + 1, thumbY, scrollbarX + scrollbarWidth - 1, thumbY + thumbHeight, 0xFFAAAAAA);
+        extractor.fill(scrollbarX + 1, thumbY, scrollbarX + scrollbarWidth - 1, thumbY + thumbHeight, 0xFFAAAAAA);
     }
 
     @Override
@@ -380,9 +386,9 @@ public class MobEspConfigScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClicked) {
         // Check if clicking on search field
-        if (searchField.isMouseOver(mouseX, mouseY)) {
+        if (searchField.isMouseOver(event.x(), event.y())) {
             searchField.setFocused(true);
             return true;
         } else {
@@ -390,16 +396,16 @@ public class MobEspConfigScreen extends Screen {
             searchField.setFocused(false);
         }
 
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, doubleClicked);
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent event) {
         // ESC key handling
-        if (keyCode == 256) { // ESC key
+        if (event.key() == 256) { // ESC key
             if (searchField.isFocused() && !currentSearchTerm.isEmpty()) {
                 // If search field is focused and has text, clear it first
-                searchField.setText("");
+                searchField.setValue("");
                 onSearchChanged("");
                 return true;
             } else if (searchField.isFocused()) {
@@ -408,35 +414,33 @@ public class MobEspConfigScreen extends Screen {
                 return true;
             }
             // Otherwise, close the screen
-            this.close();
+            this.onClose();
             return true;
         }
 
         // Tab key to focus search field
-        if (keyCode == 258) { // TAB key
+        if (event.key() == 258) { // TAB key
             searchField.setFocused(!searchField.isFocused());
             return true;
         }
 
         // Make sure search field gets focus and input
         if (searchField.isFocused()) {
-            return searchField.keyPressed(keyCode, scanCode, modifiers);
+            return searchField.keyPressed(event);
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
+    public boolean charTyped(CharacterEvent event) {
         if (searchField.isFocused()) {
-            return searchField.charTyped(chr, modifiers);
+            return searchField.charTyped(event);
         }
-        return super.charTyped(chr, modifiers);
+        return super.charTyped(event);
     }
 
     @Override
-    public void close() {
-        if (this.client != null) {
-            this.client.setScreen(parent);
-        }
+    public void onClose() {
+        this.minecraft.setScreen(parent);
     }
 }
