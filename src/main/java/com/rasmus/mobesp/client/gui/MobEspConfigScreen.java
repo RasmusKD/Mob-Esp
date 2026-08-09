@@ -305,14 +305,6 @@ public class MobEspConfigScreen extends Screen {
             extractor.fill(searchX - 2, searchY + searchHeight, searchX + searchWidth + 2, searchY + searchHeight + 2, borderColor);
             extractor.fill(searchX - 2, searchY, searchX, searchY + searchHeight, borderColor);
             extractor.fill(searchX + searchWidth, searchY, searchX + searchWidth + 2, searchY + searchHeight, borderColor);
-
-            // Status indicator
-            String statusText = "Search active";
-            int statusX = searchX + searchWidth + 10;
-            int statusY = searchY + 5;
-            extractor.text(this.font,
-                    Component.literal(statusText).withStyle(ChatFormatting.AQUA),
-                    statusX, statusY, 0xFFFFFFFF);
         }
 
         // Show search term feedback
