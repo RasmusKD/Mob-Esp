@@ -23,6 +23,7 @@ public class MobEspConfigScreen extends Screen {
     private final MobespConfig config;
     private final List<Button> mobButtons = new ArrayList<>();
     private EditBox searchField;
+    private EditBox colorField;
     private int scrollOffset = 0;
     private int maxScrollOffset = 0;
     private String currentSearchTerm = "";
@@ -87,6 +88,20 @@ public class MobEspConfigScreen extends Screen {
                 }
         ).bounds(clearX, topRowY, clearWidth, 20).build());
 
+        // Color row (below the top controls): label + hex field + preview swatch, centered
+        int colorRowY = 55;
+        int colorLabelWidth = this.font.width("ESP Color:");
+        int colorBoxWidth = 70;
+        int swatchSize = 20;
+        int colorTotal = colorLabelWidth + 6 + colorBoxWidth + 6 + swatchSize;
+        int colorStartX = centerX - (colorTotal / 2);
+
+        colorField = new EditBox(this.font, colorStartX + colorLabelWidth + 6, colorRowY, colorBoxWidth, 20,
+                Component.literal("#RRGGBB"));
+        colorField.setValue(String.format("#%06X", config.espColor));
+        colorField.setResponder(this::onColorChanged);
+        this.addRenderableWidget(colorField);
+
         // Calculate max scroll offset based on filtered results
         calculateMaxScroll();
 
@@ -120,6 +135,14 @@ public class MobEspConfigScreen extends Screen {
                     saveConfig();
                 }
         ).bounds(this.width / 2 + 110, this.height - 30, 50, 20).build());
+    }
+
+    private void onColorChanged(String value) {
+        String hex = value.startsWith("#") ? value.substring(1) : value;
+        if (hex.length() == 6 && hex.chars().allMatch(c -> Character.digit(c, 16) >= 0)) {
+            config.espColor = Integer.parseInt(hex, 16);
+            saveConfig();
+        }
     }
 
     private void onSearchChanged(String searchTerm) {
@@ -177,7 +200,7 @@ public class MobEspConfigScreen extends Screen {
     private void calculateMaxScroll() {
         List<String> filteredMobs = getFilteredMobs();
         int totalRows = (int) Math.ceil((double) filteredMobs.size() / BUTTONS_PER_ROW);
-        int visibleArea = this.height - 120; // Space between controls and bottom buttons
+        int visibleArea = this.height - 155; // Space between controls and bottom buttons
         int visibleRows = visibleArea / (BUTTON_HEIGHT + BUTTON_SPACING);
         maxScrollOffset = Math.max(0, (totalRows - visibleRows) * (BUTTON_HEIGHT + BUTTON_SPACING));
     }
@@ -186,7 +209,7 @@ public class MobEspConfigScreen extends Screen {
         mobButtons.clear();
         List<String> filteredMobs = getFilteredMobs();
 
-        int startY = 70; // Start buttons below the top controls
+        int startY = 95; // Start buttons below the top controls and the color row
         int currentRow = 0;
         int currentCol = 0;
 
@@ -198,7 +221,7 @@ public class MobEspConfigScreen extends Screen {
             int y = startY + currentRow * (BUTTON_HEIGHT + BUTTON_SPACING) - scrollOffset;
 
             // Only add visible buttons
-            if (y > 60 && y < this.height - 60) {
+            if (y > 85 && y < this.height - 60) {
                 String displayName = SpawnEggRenderer.getFormattedName(mobType);
 
                 Button button = Button.builder(
@@ -281,7 +304,15 @@ public class MobEspConfigScreen extends Screen {
 
         extractor.centeredText(this.font,
                 Component.literal(resultText).withStyle(resultColor),
-                this.width / 2, 55, 0xFFFFFFFF);
+                this.width / 2, 82, 0xFFFFFFFF);
+
+        // ESP color label and live preview swatch
+        int labelX = colorField.getX() - 6 - this.font.width("ESP Color:");
+        extractor.text(this.font, Component.literal("ESP Color:"), labelX, colorField.getY() + 6, 0xFFFFFFFF);
+        int swatchX = colorField.getX() + colorField.getWidth() + 6;
+        int swatchY = colorField.getY();
+        extractor.fill(swatchX - 1, swatchY - 1, swatchX + 21, swatchY + 21, 0xFFFFFFFF);
+        extractor.fill(swatchX, swatchY, swatchX + 20, swatchY + 20, 0xFF000000 | config.espColor);
 
         // Render spawn egg icons on buttons
         renderMobIcons(extractor);
@@ -320,7 +351,7 @@ public class MobEspConfigScreen extends Screen {
     private void renderMobIcons(GuiGraphicsExtractor extractor) {
         List<String> filteredMobs = getFilteredMobs();
 
-        int startY = 70;
+        int startY = 95;
         int currentRow = 0;
         int currentCol = 0;
 
@@ -330,7 +361,7 @@ public class MobEspConfigScreen extends Screen {
             int y = startY + currentRow * (BUTTON_HEIGHT + BUTTON_SPACING) - scrollOffset;
 
             // Only render visible icons
-            if (y > 60 && y < this.height - 60) {
+            if (y > 85 && y < this.height - 60) {
                 // Render spawn egg icon inline with button
                 SpawnEggRenderer.renderMobIcon(extractor, mobType, x, y);
             }
@@ -347,8 +378,8 @@ public class MobEspConfigScreen extends Screen {
         if (maxScrollOffset <= 0) return; // No scrollbar needed if everything fits
 
         int scrollbarX = this.width - 15;
-        int scrollbarY = 70;
-        int scrollbarHeight = this.height - 140;
+        int scrollbarY = 95;
+        int scrollbarHeight = this.height - 165;
         int scrollbarWidth = 8;
 
         // Background track
@@ -379,13 +410,13 @@ public class MobEspConfigScreen extends Screen {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClicked) {
-        // Check if clicking on search field
-        if (searchField.isMouseOver(event.x(), event.y())) {
-            searchField.setFocused(true);
+        // Focus follows the clicked text field; clicking elsewhere unfocuses both
+        boolean onSearch = searchField.isMouseOver(event.x(), event.y());
+        boolean onColor = colorField.isMouseOver(event.x(), event.y());
+        searchField.setFocused(onSearch);
+        colorField.setFocused(onColor);
+        if (onSearch || onColor) {
             return true;
-        } else {
-            // Click outside search field - remove focus
-            searchField.setFocused(false);
         }
 
         return super.mouseClicked(event, doubleClicked);
@@ -404,6 +435,9 @@ public class MobEspConfigScreen extends Screen {
                 // If search field is focused but empty, unfocus it
                 searchField.setFocused(false);
                 return true;
+            } else if (colorField.isFocused()) {
+                colorField.setFocused(false);
+                return true;
             }
             // Otherwise, close the screen
             this.onClose();
@@ -416,9 +450,12 @@ public class MobEspConfigScreen extends Screen {
             return true;
         }
 
-        // Make sure search field gets focus and input
+        // Make sure the focused text field gets the input
         if (searchField.isFocused()) {
             return searchField.keyPressed(event);
+        }
+        if (colorField.isFocused()) {
+            return colorField.keyPressed(event);
         }
         return super.keyPressed(event);
     }
@@ -427,6 +464,9 @@ public class MobEspConfigScreen extends Screen {
     public boolean charTyped(CharacterEvent event) {
         if (searchField.isFocused()) {
             return searchField.charTyped(event);
+        }
+        if (colorField.isFocused()) {
+            return colorField.charTyped(event);
         }
         return super.charTyped(event);
     }

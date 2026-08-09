@@ -15,6 +15,10 @@ public class MobespConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip
     public boolean masterToggle = true;
 
+    @ConfigEntry.ColorPicker
+    @ConfigEntry.Gui.Tooltip
+    public int espColor = 0xFFFFFF;
+
     @ConfigEntry.Gui.Tooltip
     public Map<String, Boolean> mobGlowStates = new HashMap<>();
 

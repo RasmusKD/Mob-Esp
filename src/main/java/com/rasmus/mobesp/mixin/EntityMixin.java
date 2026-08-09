@@ -35,4 +35,18 @@ public class EntityMixin {
             }
         }
     }
+
+    @Inject(method = "getTeamColor", at = @At("HEAD"), cancellable = true)
+    private void useConfiguredEspColor(CallbackInfoReturnable<Integer> cir) {
+        Entity entity = (Entity) (Object) this;
+        if (entity instanceof Mob) {
+            MobespConfig config = MobespConfig.get();
+            String mobType = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).getPath();
+
+            // Only recolor when the glow comes from this mod (isMobGlowEnabled includes the master toggle)
+            if (config.isMobGlowEnabled(mobType)) {
+                cir.setReturnValue(config.espColor);
+            }
+        }
+    }
 }
