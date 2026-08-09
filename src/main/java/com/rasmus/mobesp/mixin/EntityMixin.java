@@ -49,4 +49,21 @@ public class EntityMixin {
             }
         }
     }
+
+    @Inject(method = "shouldRenderAtSqrDistance", at = @At("HEAD"), cancellable = true)
+    private void alwaysRenderEspMobs(double distance, CallbackInfoReturnable<Boolean> cir) {
+        Entity entity = (Entity) (Object) this;
+        if (entity instanceof Mob) {
+            MobespConfig config = MobespConfig.get();
+            String mobType = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).getPath();
+
+            // The vanilla per-size render cutoff (~64 blocks) kicks in long before the server
+            // stops sending the entity, which is why a minimap radar sees mobs the ESP does
+            // not. Rendering ESP-enabled mobs unconditionally makes the glow reach as far as
+            // the client knows about the mob at all.
+            if (config.isMobGlowEnabled(mobType)) {
+                cir.setReturnValue(true);
+            }
+        }
+    }
 }
