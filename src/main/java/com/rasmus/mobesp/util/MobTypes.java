@@ -14,7 +14,7 @@ public class MobTypes {
             "evoker", "ravager", "vex", "zombified_piglin", "piglin_brute",
             "hoglin", "zoglin", "warden", "breeze", "zombie_villager",
             "creaking", "silverfish", "shulker", "guardian", "endermite",
-            "bogged", "cave_spider"
+            "bogged", "cave_spider", "parched"
     );
 
     public static final List<String> NEUTRAL_MOBS = List.of(
@@ -29,7 +29,8 @@ public class MobTypes {
             "dolphin", "turtle", "cod", "salmon", "pufferfish", "tropical_fish",
             "villager", "wandering_trader", "bat", "mooshroom", "strider",
             "frog", "tadpole", "allay", "camel", "sniffer", "armadillo",
-            "snow_golem", "happy_ghast"
+            "snow_golem", "happy_ghast", "camel_husk", "copper_golem",
+            "nautilus", "zombie_nautilus"
     );
 
     public static final List<String> BOSS_MOBS = List.of(

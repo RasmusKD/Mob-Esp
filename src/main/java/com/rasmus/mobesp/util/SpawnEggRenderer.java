@@ -48,6 +48,7 @@ public class SpawnEggRenderer {
         SPAWN_EGGS.put("bogged", Items.BOGGED_SPAWN_EGG);
         SPAWN_EGGS.put("cave_spider", Items.CAVE_SPIDER_SPAWN_EGG);
         SPAWN_EGGS.put("creaking", Items.CREAKING_SPAWN_EGG);
+        SPAWN_EGGS.put("parched", Items.PARCHED_SPAWN_EGG);
 
         // Neutral mobs
         SPAWN_EGGS.put("piglin", Items.PIGLIN_SPAWN_EGG);
@@ -97,6 +98,10 @@ public class SpawnEggRenderer {
         SPAWN_EGGS.put("armadillo", Items.ARMADILLO_SPAWN_EGG);
         SPAWN_EGGS.put("snow_golem", Items.SNOW_GOLEM_SPAWN_EGG);
         SPAWN_EGGS.put("happy_ghast", Items.HAPPY_GHAST_SPAWN_EGG);
+        SPAWN_EGGS.put("camel_husk", Items.CAMEL_HUSK_SPAWN_EGG);
+        SPAWN_EGGS.put("copper_golem", Items.COPPER_GOLEM_SPAWN_EGG);
+        SPAWN_EGGS.put("nautilus", Items.NAUTILUS_SPAWN_EGG);
+        SPAWN_EGGS.put("zombie_nautilus", Items.ZOMBIE_NAUTILUS_SPAWN_EGG);
 
         // Boss mobs
         SPAWN_EGGS.put("elder_guardian", Items.ELDER_GUARDIAN_SPAWN_EGG);
