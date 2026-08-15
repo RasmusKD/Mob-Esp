@@ -23,14 +23,11 @@ public class EntityMixin {
             Identifier entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
             String mobType = entityId.getPath();
 
-            // Force override - if ESP is disabled or mob type is disabled, never glow
-            if (!config.masterToggle || !config.isMobGlowEnabled(mobType)) {
-                cir.setReturnValue(false);
-                return;
-            }
-
-            // If ESP is enabled for this mob type, make it glow
-            if (config.isMobGlowEnabled(mobType)) {
+            // Only ever vote YES. Forcing false here silences every other voter
+            // on the same hook (rare-fish-finder's glow, and vanilla's own
+            // spectral-arrow/status-effect glowing) for every mob the ESP simply
+            // has no opinion on. Falling through leaves the decision to them.
+            if (config.masterToggle && config.isMobGlowEnabled(mobType)) {
                 cir.setReturnValue(true);
             }
         }
