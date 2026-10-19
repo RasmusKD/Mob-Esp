@@ -7,12 +7,13 @@ Read the `minecraft-mods` skill first (`C:\Users\Rasmus\.claude\skills\minecraft
 ## Build
 
 - Java 25: `JAVA_HOME=C:\Users\Rasmus\.jdks\jdk-25.0.3+9`, then `./gradlew build`. The jar is written to `build/libs/`.
+- Two jars: `./gradlew build` (26.1.x and 26.2, `mobesp-X.Y.Z+26.1.jar`) and `./gradlew build -PmcTarget=26.3` (`+26.3`); run `clean` between them. See `VERSIONS.md`.
 - No unit tests; the check is a clean build plus a run in a Modrinth App instance (see the skill).
 - It leaves tropical fish to Rare Fish Finder when that mod is installed. The ESP only ever votes yes on glow. Cache nothing from an ItemStack during a component rebind (it throws).
 
 ## Release
 
-No workflow. The CurseForge jar can be newer than the git source (2.4.3 jar vs 2.4.2 source at the time of writing); check `git log` and `mod_version` in `gradle.properties` before assuming they match. Do not publish unless Rasmus asks.
+No workflow. Git source and the CurseForge 2.4.3 jar match from branch `mc-26.3` on (the empty-scan fix was rebuilt from the jar, bytecode identical for `MobTypes` and `SpawnEggRenderer`); `main` still has 2.4.2. Check `git log` and `mod_version` in `gradle.properties` before assuming a jar matches. Do not publish unless Rasmus asks.
 
 ## Keep skills and docs current (same rule as Nordvec)
 
