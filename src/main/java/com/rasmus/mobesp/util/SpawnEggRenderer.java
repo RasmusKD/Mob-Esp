@@ -21,13 +21,23 @@ public class SpawnEggRenderer {
     static Map<String, Item> getSpawnEggs() {
         if (spawnEggs == null) {
             Map<String, Item> eggs = new TreeMap<>();
+            boolean complete = true;
             for (Item item : BuiltInRegistries.ITEM) {
                 if (item instanceof SpawnEggItem) {
-                    EntityType<?> type = SpawnEggItem.getType(new ItemStack(item));
-                    if (type != null) {
-                        eggs.put(BuiltInRegistries.ENTITY_TYPE.getKey(type).getPath(), item);
+                    try {
+                        EntityType<?> type = SpawnEggItem.getType(new ItemStack(item));
+                        if (type != null) {
+                            eggs.put(BuiltInRegistries.ENTITY_TYPE.getKey(type).getPath(), item);
+                        }
+                    } catch (Throwable t) {
+                        // ItemStack construction throws while components are being rebound
+                        // (resource reload); skip the item and do not trust this scan.
+                        complete = false;
                     }
                 }
+            }
+            if (!complete && eggs.isEmpty()) {
+                return Map.of();
             }
             spawnEggs = eggs;
         }
