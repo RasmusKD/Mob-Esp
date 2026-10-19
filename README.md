@@ -20,7 +20,7 @@
 ## Controls
 
 - **M**: Toggle ESP on/off
-- **O**: Open configuration screen
+- **K**: Open configuration screen (moved from O, which vanilla binds to the Friends screen from 26.2 on; existing saved bindings are kept)
 
 ## Requirements
 

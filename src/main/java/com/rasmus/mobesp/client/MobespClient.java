@@ -40,7 +40,7 @@ public class MobespClient implements ClientModInitializer {
         openConfigKeyBinding = KeyMappingHelper.registerKeyMapping(
                 new KeyMapping(
                         "key.mobesp.openConfig",
-                        InputConstants.KEY_O, // O key (for Open)
+                        InputConstants.KEY_K, // K: vanilla uses O for Friends from 26.2 on
                         MOBESP_CATEGORY
                 )
         );
