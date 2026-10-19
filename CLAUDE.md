@@ -13,7 +13,7 @@ Read the `minecraft-mods` skill first (`C:\Users\Rasmus\.claude\skills\minecraft
 
 ## Release
 
-No workflow. Git source and the CurseForge 2.4.3 jar match from branch `mc-26.3` on (the empty-scan fix was rebuilt from the jar, bytecode identical for `MobTypes` and `SpawnEggRenderer`); `main` still has 2.4.2. Check `git log` and `mod_version` in `gradle.properties` before assuming a jar matches. Do not publish unless Rasmus asks.
+No workflow. Git source and the CurseForge jars match (2.4.4, config key K, `+26.1` and `+26.3`, released 2026-10-19) from branch `mc-26.3` on, merged to `main` (the empty-scan fix was rebuilt from the jar, bytecode identical for `MobTypes` and `SpawnEggRenderer`). Check `git log` and `mod_version` in `gradle.properties` before assuming a jar matches. Do not publish unless Rasmus asks.
 
 ## Keep skills and docs current (same rule as Nordvec)
 
