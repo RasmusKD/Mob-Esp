@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "mobesp-test",
+  "version": "1.0.0",
+  "name": "Mob ESP client gametest",
+  "environment": "client",
+  "entrypoints": {
+    "fabric-client-gametest": [
+      "com.rasmus.mobesp.test.MobespClientGameTest"
+    ]
+  },
+  "depends": {
+    "mobesp": "*"
+  }
+}

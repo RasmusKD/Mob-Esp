@@ -126,6 +126,17 @@ publishing {
     }
 }
 
+// Dev-only client gametest (source set `gametest`, never part of the jar):
+// ./gradlew runClientGametest [-PmcTarget=26.3]. Headless recipe: the minecraft-mods skill, scripts/smoke/wsl_gametest.sh.
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = "mobesp-test"
+        enableGameTests = false
+        enableClientGameTests = true
+        eula = true
+    }
+}
 // Every mixin a config lists must be a compiled class of this variant's jar.
 tasks.register('verifyMixinClasses') {
     dependsOn tasks.named('classes')
