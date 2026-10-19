@@ -3,6 +3,7 @@ package com.rasmus.mobesp.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.rasmus.mobesp.client.gui.MobEspConfigScreen;
 import com.rasmus.mobesp.config.MobespConfig;
+import com.rasmus.mobesp.util.ScreenCompat;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -31,8 +32,7 @@ public class MobespClient implements ClientModInitializer {
         toggleMasterKeyBinding = KeyMappingHelper.registerKeyMapping(
                 new KeyMapping(
                         "key.mobesp.toggleMaster",
-                        InputConstants.Type.KEYSYM,
-                        77, // M key (for Mob)
+                        InputConstants.KEY_M, // M key (for Mob)
                         MOBESP_CATEGORY
                 )
         );
@@ -40,8 +40,7 @@ public class MobespClient implements ClientModInitializer {
         openConfigKeyBinding = KeyMappingHelper.registerKeyMapping(
                 new KeyMapping(
                         "key.mobesp.openConfig",
-                        InputConstants.Type.KEYSYM,
-                        79, // O key (for Open)
+                        InputConstants.KEY_O, // O key (for Open)
                         MOBESP_CATEGORY
                 )
         );
@@ -62,8 +61,8 @@ public class MobespClient implements ClientModInitializer {
             }
 
             while (openConfigKeyBinding.consumeClick()) {
-                if (client.screen == null) {
-                    client.setScreen(new MobEspConfigScreen(null));
+                if (ScreenCompat.current(client) == null) {
+                    ScreenCompat.set(client, new MobEspConfigScreen(null));
                 }
             }
         });

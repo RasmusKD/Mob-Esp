@@ -1,7 +1,9 @@
 package com.rasmus.mobesp.client.gui;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.rasmus.mobesp.config.MobespConfig;
 import com.rasmus.mobesp.util.MobTypes;
+import com.rasmus.mobesp.util.ScreenCompat;
 import com.rasmus.mobesp.util.SpawnEggRenderer;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.ChatFormatting;
@@ -425,7 +427,7 @@ public class MobEspConfigScreen extends Screen {
     @Override
     public boolean keyPressed(KeyEvent event) {
         // ESC key handling
-        if (event.key() == 256) { // ESC key
+        if (event.key() == InputConstants.KEY_ESCAPE) {
             if (searchField.isFocused() && !currentSearchTerm.isEmpty()) {
                 // If search field is focused and has text, clear it first
                 searchField.setValue("");
@@ -445,7 +447,7 @@ public class MobEspConfigScreen extends Screen {
         }
 
         // Tab key to focus search field
-        if (event.key() == 258) { // TAB key
+        if (event.key() == InputConstants.KEY_TAB) {
             searchField.setFocused(!searchField.isFocused());
             return true;
         }
@@ -473,6 +475,6 @@ public class MobEspConfigScreen extends Screen {
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(parent);
+        ScreenCompat.set(this.minecraft, parent);
     }
 }
